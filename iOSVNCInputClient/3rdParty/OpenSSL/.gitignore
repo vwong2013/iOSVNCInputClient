@@ -1,0 +1,5 @@
+#ignore every file
+*
+#but not the following
+!.gitignore
+!include/
