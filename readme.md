@@ -1,6 +1,6 @@
 ## iOSVNCInputClient
 ---
-iOSVNCInputClient is a VNC input only client for device running iOS 5.1 and above.  It is designed to simulate mouse and keyboard input on a iOS device, over a (local) network to a connected remote computer using the RFB protocol.
+iOSVNCInputClient is a VNC input only client for devices running iOS 5.1 and above.  It is designed to simulate mouse and keyboard input on a iOS device, over a (local) network to a connected remote computer using the RFB protocol.
 
 ### Features
 ---
