@@ -9,7 +9,7 @@ iOSVNCInputClient is a VNC input only client for devices running iOS 5.1 and abo
 *  Mouse input by simulating trackpad.  Left, right, simultaneous left and right click, left click hold (for dragging) and vertical scroll wheel supported.
 *  Automatic VNC server service discovery via Bonjour zero-configuration networking over IP.
 *  IP v4 and v6 address support.
-*  iOS 7 64bit compatible.
+*  iOS 5.1 - iOS 7.1 supported
 
 ### Building
 ---
