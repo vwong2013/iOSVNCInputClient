@@ -34,6 +34,11 @@ Windows users will require a 3rd party VNC server app (e.g. TightVNC) to be able
 * In some rare occasions, Apple Remote Desktop authentication will fail with a incorrect login error even if login details are correct.  This is caused by OpenSSL not generating the correct DH public/private key lengths.  For now, workaround is to re-attempt the authentication by going back to the app's home screen and then trying again.  It should authenticate fine in the second attempt.  
 * Service Discovery may not work with Windows-based VNC server apps
 * You must press "Return" after editing a field in a Profile before clicking on "Save" for changes to be saved.
+
+### Misc Notes
+---
+*  Target valid architectures is set to armv7 and armv7s aka 32-bit only for iOS 5 compatibility (64-bit silvers cannot be opened on iOS 5)
+
  
 ### Roadmap
 ---
