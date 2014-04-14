@@ -70,7 +70,6 @@
 	[self stopSpinner];
 	
 	//Get rid of VNC connection
-	[self.rfbInputConnMgr stop];
 	self.rfbInputConnMgr = nil;
 	DLogInf(@"Unloading Mouse View");
 	

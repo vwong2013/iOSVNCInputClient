@@ -37,14 +37,11 @@
 @property (strong,nonatomic) ServerProfile *serverProfile;
 @property (strong,nonatomic) RFBConnection *rfbconn;
 @property (assign,nonatomic) CGPoint pointerScaleFactor;
-@property (assign,nonatomic) dispatch_queue_t inputQueue, readQueue;
-@property (strong,nonatomic) NSTimer *loopedTimer; //continuous read loop
+//@property (assign,nonatomic) dispatch_queue_t readQueue;
+//@property (strong,nonatomic) NSTimer *loopedTimer; //continuous read loop
 @end
 
-@implementation RFBInputConnManager {
-    dispatch_queue_t _inputQueue;
-//    dispatch_queue_t _readQueue;
-}
+@implementation RFBInputConnManager
 #pragma mark - init, dealloc overrides
 -(id)init {
 	return [self initWithProfile:nil ProtocolDelegate:nil];
@@ -71,7 +68,33 @@
 
 #pragma mark - GCD queue pointer store iOS 5.1 workaround
 //iOS 5.1 doesn't allow strong property for dispatch queues as they're not Objective-C objects
+-(dispatch_queue_t)inputQueue:(dispatch_queue_t)newInputQueue Set:(BOOL)shouldSet {
+    static dispatch_queue_t inputQueue;
+    
+    if (shouldSet) {
+        if (inputQueue != NULL) {
+            dispatch_release(inputQueue);
+            DLog(@"inputQueue released: %p", inputQueue);
+        }
+        inputQueue = newInputQueue;
+        DLog(@"Updated inputQueue: %p", inputQueue);
+    }
+    
+    return inputQueue;
+}
 
+-(dispatch_queue_t)inputQueue {
+    if ([self inputQueue:nil Set:NO] == NULL) {
+        dispatch_queue_t newInputQueue = dispatch_queue_create("iOSVNCInputClient.InputCheckQueue", DISPATCH_QUEUE_CONCURRENT);
+        [self setInputQueue:newInputQueue];
+    }
+    
+    return [self inputQueue:nil Set:NO];
+}
+
+-(void)setInputQueue:(dispatch_queue_t)inputQueue {
+    [self inputQueue:inputQueue Set:YES];
+}
 
 #pragma mark - Error Management - Private
 -(void)handleError:(NSError *)error duringAction:(ActionList)action {
@@ -100,13 +123,10 @@
 		[self handleError:error duringAction:CONNECTION_START];
 		return;
 	}
-
-	//Setup Queue
-	self.inputQueue = dispatch_queue_create("rfbInputQueue", NULL);
 	
 	//Connect
 	__weak RFBInputConnManager *blockSafeSelf = self;
-	dispatch_async(self.inputQueue, ^{
+	dispatch_async([self inputQueue], ^{
 		__block NSError *error = nil;
 		__block BOOL success = [blockSafeSelf.rfbconn connect:&error];
 		dispatch_async(dispatch_get_main_queue(), ^{ //Tell delegate connection complete, do rest of startup
@@ -131,8 +151,6 @@
                 [blockSafeSelf.delegate rfbInputConnManager:blockSafeSelf performedAction:CONNECTION_END encounteredError:error];
 		});
 	});
-    dispatch_release(self.inputQueue);
-    self.inputQueue = nil;
 }
 
 -(void)stop {
@@ -145,14 +163,14 @@
 	self.rfbconn = nil;
 	
 	//Clear queues & Clear propertys holding the queues
-	if (self.inputQueue) {
-		dispatch_release(self.inputQueue);
-		self.inputQueue = nil;
-	}
+    [self setInputQueue:nil];
+    
+    /*
 	if (self.readQueue) {
 		dispatch_release(self.readQueue);
 		self.readQueue = nil;		
 	}
+     */
 	
 	//Delegate notification end signal
 	if (self.delegate && !self.rfbconn)
@@ -163,8 +181,7 @@
 -(void)sendEvent:(RFBEvent *)event {
 	//Send event
 	__weak RFBInputConnManager *blockSafeSelf = self;
-	self.inputQueue = dispatch_queue_create("rfbInputQueue", NULL);
-    dispatch_async(self.inputQueue, ^{
+    dispatch_async([self inputQueue], ^{
         __block NSError *error = nil;
         [blockSafeSelf.rfbconn sendEvent:event
                                    Error:&error];
@@ -177,8 +194,6 @@
 			}
 		});
     });
-    dispatch_release(self.inputQueue);
-    self.inputQueue = nil;
 }
 
 -(CGPoint)serverScaleFactor {
@@ -232,6 +247,7 @@
 }
 
 #pragma mark - Server Read Management - Private
+/*
 //To be run inside a "read" thread only - don't run in main thread
 -(void)readAndIgnore:(RFBInputConnManager *)blockSafeSelf {
 	//While RFBConnection is Connected...
@@ -258,5 +274,5 @@
 	//Call read to gobble server data (and ignore)
 	[blockSafeSelf.rfbconn discardIncomingData];
 }
-
+*/
 @end
