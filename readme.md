@@ -31,8 +31,9 @@ Windows users will require a 3rd party VNC server app (e.g. TightVNC) to be able
 
 ### Known Issues 
 ---
-* In some rare occasions, Apple Remote Desktop authentication will fail with a incorrect login error even if login details are correct.  Workaround is to re-attempt the authentication by going back to the app's home screen and then trying again.  It should authenticate fine in the second attempt.
+* In some rare occasions, Apple Remote Desktop authentication will fail with a incorrect login error even if login details are correct.  This is caused by OpenSSL not generating the correct DH public/private key lengths.  For now, workaround is to re-attempt the authentication by going back to the app's home screen and then trying again.  It should authenticate fine in the second attempt.  
 * Service Discovery may not work with Windows-based VNC server apps
+* You must press "Return" after editing a field in a Profile before clicking on "Save" for changes to be saved.
  
 ### Roadmap
 ---
@@ -54,6 +55,8 @@ RFB protocol object model is based on Valence, but modified, with underlying met
 
 ### Changelog
 ---
+
+* 2014-Apr-14 Bug fixes, updated Known Issues, minor code cleanup
 * 2014-Jan-24	Initial Public Release
 
 ### Licensing
