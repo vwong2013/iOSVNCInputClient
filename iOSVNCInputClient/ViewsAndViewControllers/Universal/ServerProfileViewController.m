@@ -125,7 +125,7 @@
 	//Should have "complete" profile details by the time Save Profile button is pressed
 	//Save successfully probed profile to plist
     //self.strongDelegate = self.delegate;
-    __block ServerProfileViewController *blockSafeSelf = self;
+    __weak ServerProfileViewController *blockSafeSelf = self;
     dispatch_queue_t saveQueue = dispatch_queue_create("saveQueue", NULL);
     dispatch_async(saveQueue, ^ {
         NSError *error = nil;
@@ -328,7 +328,7 @@
 -(void)probe {
     [self startSpinnerWithWaitText:NSLocalizedString(@"Probing Server...", @"ServerProfileVC Details Probe Spinner Text")];
     
-    __block ServerProfileViewController *blockSafeSelf = self;
+    __weak ServerProfileViewController *blockSafeSelf = self;
     __block NSDictionary *probeResults;
     __block NSError *error = nil;
     dispatch_queue_t probeQueue = dispatch_queue_create("probeQueue", NULL);

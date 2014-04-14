@@ -41,8 +41,11 @@
 @property (strong,nonatomic) NSTimer *loopedTimer; //continuous read loop
 @end
 
-@implementation RFBInputConnManager
-
+@implementation RFBInputConnManager {
+    dispatch_queue_t _inputQueue;
+//    dispatch_queue_t _readQueue;
+}
+#pragma mark - init, dealloc overrides
 -(id)init {
 	return [self initWithProfile:nil ProtocolDelegate:nil];
 }
@@ -65,6 +68,10 @@
 	self.serverProfile = nil;
 	self.rfbconn = nil;
 }
+
+#pragma mark - GCD queue pointer store iOS 5.1 workaround
+//iOS 5.1 doesn't allow strong property for dispatch queues as they're not Objective-C objects
+
 
 #pragma mark - Error Management - Private
 -(void)handleError:(NSError *)error duringAction:(ActionList)action {
@@ -98,7 +105,7 @@
 	self.inputQueue = dispatch_queue_create("rfbInputQueue", NULL);
 	
 	//Connect
-	__block RFBInputConnManager *blockSafeSelf = self;
+	__weak RFBInputConnManager *blockSafeSelf = self;
 	dispatch_async(self.inputQueue, ^{
 		__block NSError *error = nil;
 		__block BOOL success = [blockSafeSelf.rfbconn connect:&error];
@@ -155,7 +162,7 @@
 #pragma mark - Input Event Management - Public
 -(void)sendEvent:(RFBEvent *)event {
 	//Send event
-	__block RFBInputConnManager *blockSafeSelf = self;
+	__weak RFBInputConnManager *blockSafeSelf = self;
 	self.inputQueue = dispatch_queue_create("rfbInputQueue", NULL);
     dispatch_async(self.inputQueue, ^{
         __block NSError *error = nil;

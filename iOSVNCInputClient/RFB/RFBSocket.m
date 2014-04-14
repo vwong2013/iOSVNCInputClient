@@ -73,7 +73,7 @@
 #pragma mark - Socket Options - Public
 -(BOOL)setTCPNoDelay:(BOOL)on {
     __block BOOL ok = NO;
-    __block RFBSocket *blockSafeSelf = self;
+    __weak RFBSocket *blockSafeSelf = self;
     [self.socket performBlock:^{
         int socketFD = [blockSafeSelf.socket socketFD];
         int onOff = on;

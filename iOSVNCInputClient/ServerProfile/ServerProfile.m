@@ -103,4 +103,7 @@
 	
 	return YES;
 }
+
+#pragma mark - Copy methods
+
 @end
