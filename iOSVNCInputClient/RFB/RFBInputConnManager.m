@@ -41,7 +41,9 @@
 //@property (strong,nonatomic) NSTimer *loopedTimer; //continuous read loop
 @end
 
-@implementation RFBInputConnManager
+@implementation RFBInputConnManager {
+    dispatch_queue_t _inputQueue;
+}
 #pragma mark - init, dealloc overrides
 -(id)init {
 	return [self initWithProfile:nil ProtocolDelegate:nil];
@@ -68,32 +70,21 @@
 
 #pragma mark - GCD queue pointer store iOS 5.1 workaround
 //iOS 5.1 doesn't allow strong property for dispatch queues as they're not Objective-C objects
--(dispatch_queue_t)inputQueue:(dispatch_queue_t)newInputQueue Set:(BOOL)shouldSet {
-    static dispatch_queue_t inputQueue;
-    
-    if (shouldSet) {
-        if (inputQueue != NULL) {
-            dispatch_release(inputQueue);
-            DLog(@"inputQueue released: %p", inputQueue);
-        }
-        inputQueue = newInputQueue;
-        DLog(@"Updated inputQueue: %p", inputQueue);
-    }
-    
-    return inputQueue;
-}
-
 -(dispatch_queue_t)inputQueue {
-    if ([self inputQueue:nil Set:NO] == NULL) {
-        dispatch_queue_t newInputQueue = dispatch_queue_create("iOSVNCInputClient.InputCheckQueue", DISPATCH_QUEUE_CONCURRENT);
-        [self setInputQueue:newInputQueue];
+    if (_inputQueue == NULL) {
+        _inputQueue = dispatch_queue_create("iOSVNCInputClient.InputCheckQueue", DISPATCH_QUEUE_CONCURRENT);
+//        DLog(@"Input Queue Created");
     }
     
-    return [self inputQueue:nil Set:NO];
+    return _inputQueue;
 }
 
 -(void)setInputQueue:(dispatch_queue_t)inputQueue {
-    [self inputQueue:inputQueue Set:YES];
+    if (_inputQueue != NULL) {
+        dispatch_release(_inputQueue);
+//        DLog(@"Input Queue Released");
+    }
+    _inputQueue = inputQueue;
 }
 
 #pragma mark - Error Management - Private
