@@ -256,24 +256,27 @@
 	//Error handling block
 	HandleError he = [HandleErrors handleErrorBlock];
     
-    if (self.address && self.address.length > 0)
-		self.rfbSocket = [[RFBSocket alloc] initWithAddress:self.address Port:self.port];
-	else {
+    if (self.address && self.address.length > 0) {
+		self.rfbSocket = [[RFBSocket alloc] initWithAddress:self.address
+                                                       Port:self.port];
+	} else {
         he(error,SocketErrorDomain,SocketConnectError,NSLocalizedString(@"Could not instantiate BWRFBStream object", @"RFBConn invalid address error text"));
 		return NO; //Skip rest of method
 	}
 	
 	//Connect to supplied address/port
 	BOOL connecting = [self.rfbSocket connect:error];
-	if (!connecting)
+	if (!connecting) {
 		return NO;
+    }
 	
 	//Get server protocol version and reply with desired RFB protocol version
-	self.serverVersion = [self.rfbSocket readVersion];
-    if (self.serverVersion == nil) { //No version returned
+    VersionMsg *serverVer = [self.rfbSocket readVersion];
+    if (serverVer == nil) { //No version returned
         he(error,SocketErrorDomain,SocketConnectError,NSLocalizedString(@"Could not negotiate connection.  Screen Sharing disabled?", @"RFBConn Server NIL Protocol Version Error text"));
         return NO;
     }
+    self.serverVersion = serverVer;
     
 	int version = [self.serverVersion intValue];
     DLog(@"server version: %i", version);    

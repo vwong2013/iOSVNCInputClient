@@ -171,8 +171,9 @@
 	if ([self.socket connectToHost:self.address
 							onPort:self.port
 					   withTimeout:TIMEOUT
-							 error:&error])
+							 error:&error]) {
 		return YES;
+    }
 	
 	*connErr = error;	
 	

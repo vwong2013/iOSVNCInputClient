@@ -73,7 +73,8 @@
 		return nil;
 	}
 	
-	return [self initWithMajor:major Minor:minor];
+	return [self initWithMajor:major
+                         Minor:minor];
 }
 
 #pragma mark - Other Public Methods

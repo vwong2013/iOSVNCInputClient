@@ -183,8 +183,8 @@
 	
 	//Decrypt certain fields
 	NSString *password = [Des decryptText:[plistDict objectForKey:@"Password"]
-										WithKey:nil];
-	if (!password) {
+                                  WithKey:nil];
+	if (!password || password.length == 0) {
 		handleError(error, SecurityErrorDomain, SecurityDecryptError, [NSString stringWithFormat:@"Could not decrypt: %@", [plistDict objectForKey:@"Password"]]);
 		return nil;
 	}
