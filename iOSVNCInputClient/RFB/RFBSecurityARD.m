@@ -259,6 +259,7 @@ typedef struct {
         DH_free(dhOwnKey);
 		return NO;
 	}
+    
 	// perform key agreement
 	if ((DH_compute_key(sharedSecret, peerKey, dhOwnKey)) == -1) { //COmpute shared secret
 		he(error,SecurityErrorDomain,SecurityEncryptError,NSLocalizedString(@"Failed to compute shared secret",@"RFBSecurityARD DH key agreement error text"));
@@ -272,6 +273,16 @@ typedef struct {
 	int privKeyLength = BN_num_bytes(dhOwnKey->priv_key);
 	int pubKeyLength = BN_num_bytes(dhOwnKey->pub_key);
     
+    //Check key lengths of generated private and public DH keys
+    if (privKeyLength != keyLength || pubKeyLength != keyLength) {
+        NSString *errorMsg = NSLocalizedString(@"Public/Private Key Lengths have been incorrectly generated: ",@"RFBSecurityARD DH private/public key error text");
+		he(error,SecurityErrorDomain,SecurityEncryptError,[NSString stringWithFormat:@"%@ privLen: %i, pubLen: %i", errorMsg, privKeyLength, pubKeyLength]);
+        free(sharedSecret);
+        DH_free(dhOwnKey);
+        return NO;
+    }
+    
+    //Allocate memory for private and public keys
 	if (!(privKey = malloc(sizeof(unsigned char) * privKeyLength))) {
 		he(error,SecurityErrorDomain,SecurityEncryptError,NSLocalizedString(@"Could not allocate memory for bignum conversion of priv", @"RFBSecurityARD priv key malloc error text"));
 		free(sharedSecret);
@@ -285,6 +296,7 @@ typedef struct {
         DH_free(dhOwnKey);        
 		return NO;
 	}
+    
 	//Convert stored priv and pub keys into big endian form
 	if ((BN_bn2bin(dhOwnKey->priv_key, privKey)) <= 0 || (BN_bn2bin(dhOwnKey->pub_key, pubKey)) <= 0) {
 		he(error,SecurityErrorDomain,SecurityEncryptError,NSLocalizedString(@"Could not convert keys into big endian form",@"RFBSecurityARD key conversion error text"));
