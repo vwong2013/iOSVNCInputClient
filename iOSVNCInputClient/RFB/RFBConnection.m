@@ -35,13 +35,13 @@
 #define DEFAULT__PORT 5900
 
 @interface RFBConnection()
-@property (nonatomic, strong) NSString *address;
+@property (nonatomic, copy) NSString *address;
 @property (nonatomic, assign) int port;
 @property (nonatomic, strong) RFBSecurity *security;
 @property (nonatomic, strong) RFBSocket *rfbSocket;
 @property (nonatomic, strong) VersionMsg *serverVersion;
 @property (nonatomic, strong) NSData *securityTypes;
-@property (nonatomic, strong) NSString *serverName;
+@property (nonatomic, copy) NSString *serverName;
 @property (nonatomic, assign) int width;
 @property (nonatomic, assign) int height;
 @property (nonatomic, assign) float pointerX;

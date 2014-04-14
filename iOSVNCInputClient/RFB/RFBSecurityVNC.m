@@ -26,7 +26,7 @@
 #define VNCAuthChallengeLength 16
 
 @interface RFBSecurityVNC()
-@property (strong,nonatomic) NSString *password;
+@property (copy,nonatomic) NSString *password;
 @end
 
 @implementation RFBSecurityVNC

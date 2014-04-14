@@ -17,12 +17,12 @@
 #import "VersionMsg.h"
 
 @interface ServerProfile : NSObject
-@property (strong, nonatomic) NSString *address;
+@property (copy, nonatomic) NSString *address;
 @property (nonatomic, assign) int port;
-@property (nonatomic, strong) NSString *serverName;
-@property (nonatomic, strong) NSString *serverVersion;
-@property (nonatomic, strong) NSString *username;
-@property (nonatomic, strong) NSString *password;
+@property (nonatomic, copy) NSString *serverName;
+@property (nonatomic, copy) NSString *serverVersion;
+@property (nonatomic, copy) NSString *username;
+@property (nonatomic, copy) NSString *password;
 @property (nonatomic, assign) BOOL ard35Compatibility;
 @property (nonatomic, assign) BOOL macAuthentication;
 

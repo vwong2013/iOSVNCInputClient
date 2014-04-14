@@ -34,6 +34,7 @@
 #define SAVED_PROFILE_CELL_TEXTS @"profileTexts"
 #define SAVED_PROFILE_CELL_URLS @"profileURLs"
 
+#define SEGUE_MOUSE_VC @"MouseVC"
 #define SEGUE_ADD_PROFILE @"addServerProfile"
 
 @interface MasterViewController () <ServerProfileViewControllerDelegate>
@@ -349,9 +350,9 @@
 	NSURL *loadedProfileURL = [self loadSavedProfileCellURLFromRow:indexPath.row
                                                          Error:&error];
     ServerProfile *loadedProfile = nil;
-    if (loadedProfileURL)
+    if (loadedProfileURL) {
         loadedProfile = [ProfileSaverFetcher readSavedProfileFromURL:loadedProfileURL
-                                                              Error:&error];
+                                                               Error:&error];}
 	
 	if (error) {
 		DLogErr(@"Error: Failed to load profile, Error: %@", [error localizedDescription]);
@@ -463,7 +464,7 @@
 -(void)showMouseViewWithProfile:(ServerProfile *)serverProfile {
     //Using SB and VC/IB setup in SB, so must do the below in order for correct V to be also instantiated
 	UIStoryboard *sb = [UIStoryboard storyboardWithName:[[self class] interfaceIdiomDependentStoryboardName] bundle:nil];
-	RFBInputViewController *mouseVC = [sb instantiateViewControllerWithIdentifier:@"MouseVC"];
+	RFBInputViewController *mouseVC = [sb instantiateViewControllerWithIdentifier:SEGUE_MOUSE_VC];
 	mouseVC.serverProfile = serverProfile;
     
     [self pushViewController:mouseVC];

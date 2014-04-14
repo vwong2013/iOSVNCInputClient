@@ -17,9 +17,9 @@
 #import <UIKit/UITableViewCell.h>
 
 @interface TableRowDetails : NSObject
-@property (strong, nonatomic) NSString *cellId;
-@property (strong, nonatomic) NSString *title;
-@property (strong, nonatomic) NSString *subtitle;
+@property (copy, nonatomic) NSString *cellId;
+@property (copy, nonatomic) NSString *title;
+@property (copy, nonatomic) NSString *subtitle;
 @property (assign, nonatomic) UITableViewCellStyle uitvcs;
 
 -(id)initWithCellId:(NSString *)cellId Title:(NSString *)title Subtitle:(NSString *)subtitle;

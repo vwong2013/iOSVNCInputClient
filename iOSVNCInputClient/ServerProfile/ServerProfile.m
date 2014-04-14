@@ -15,7 +15,7 @@
 
 #import "ServerProfile.h"
 
-@interface ServerProfile()
+@interface ServerProfile() <NSCopying>
 
 @end
 
@@ -104,6 +104,16 @@
 	return YES;
 }
 
-#pragma mark - Copy methods
-
+#pragma mark - NSCopying protocol method
+-(id)copyWithZone:(NSZone *)zone {
+    ServerProfile *spCopy = [[[self class] allocWithZone:zone] initWithAddress:self.address
+                                                                          Port:self.port
+                                                                      Username:self.username
+                                                                      Password:self.password
+                                                                    ServerName:self.serverName
+                                                                 ServerVersion:self.serverVersion
+                                                                         ARD35:self.ard35Compatibility
+                                                                       MacAuth:self.macAuthentication];
+    return spCopy;
+}
 @end

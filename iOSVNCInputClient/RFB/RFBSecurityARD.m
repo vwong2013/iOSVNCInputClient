@@ -43,8 +43,8 @@ typedef struct {
 #define CRED_ARRAY_SIZE 128
 
 @interface RFBSecurityARD()
-@property (strong,nonatomic) NSString *username;
-@property (strong,nonatomic) NSString *password;
+@property (copy,nonatomic) NSString *username;
+@property (copy,nonatomic) NSString *password;
 
 @end
 

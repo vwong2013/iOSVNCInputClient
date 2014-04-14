@@ -35,7 +35,7 @@
 @interface RFBSocket()
 @property (assign, nonatomic) int version;
 
-@property (strong, nonatomic) NSString *address; //ip or domain name
+@property (copy, nonatomic) NSString *address; //ip or domain name
 @property (assign, nonatomic) int port;
 @property (strong, nonatomic) GCDAsyncSocket *socket;
 
