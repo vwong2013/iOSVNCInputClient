@@ -39,8 +39,6 @@
 @property (assign, nonatomic) int port;
 @property (strong, nonatomic) GCDAsyncSocket *socket;
 
-@property (assign, nonatomic) dispatch_queue_t delegateQueue;
-
 //Read temp data buffers for CocoaAsyncSocket to read data from
 @property (strong, nonatomic) NSData *readBuffer;
 @property (assign, nonatomic) BOOL requestReadyOrTimedOut;
@@ -58,8 +56,8 @@
 		_version = 0;
 		_address = address;
 		_port = port;
-		_delegateQueue = dispatch_queue_create("socketDelegateQueue", NULL); //separate thread for delegate calls to RFBStream
-		_socket = [[GCDAsyncSocket alloc] initWithDelegate:self delegateQueue:_delegateQueue];
+        dispatch_queue_t socketQ = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0);
+		_socket = [[GCDAsyncSocket alloc] initWithDelegate:self delegateQueue:socketQ];
 	}
 	return self;
 }
@@ -187,11 +185,6 @@
     //release socket in recommended manner.  
 	[self.socket setDelegate:nil delegateQueue:NULL];
 	[self.socket disconnect];
-	//Manually release created GCD thread
-    if (self.delegateQueue) {
-        dispatch_release(self.delegateQueue);
-        self.delegateQueue = nil;
-    }
 }
 
 #pragma mark - Read Methods - Public

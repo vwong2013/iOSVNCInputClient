@@ -248,8 +248,6 @@
 	NSData *plainData = [[self class] decryptMessage:[NSData dataFromHexString:ciphertext]
                                              withKey:key];
 	const char *plainBytes = [plainData bytes];
-
-    //DLog(@"plainBytes %s",plainBytes);
     
 	if (plainBytes == nil) {
         DLogErr(@"DecryptText error - Decrypt failed or none to decrypt");
@@ -259,6 +257,7 @@
 	NSString *plaintext = [NSString stringWithUTF8String:plainBytes];
     if (!plaintext || plaintext.length == 0) {
         DLogErr(@"DecryptText error - failed to wrap c string as NSString");
+        DLog(@"plainBytes %s",plainBytes);        
         return @""; //failed to wrap c string as NSString
     }
     

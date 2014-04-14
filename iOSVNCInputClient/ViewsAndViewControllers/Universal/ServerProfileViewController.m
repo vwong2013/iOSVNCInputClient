@@ -126,7 +126,7 @@
 	//Save successfully probed profile to plist
     //self.strongDelegate = self.delegate;
     __weak ServerProfileViewController *blockSafeSelf = self;
-    dispatch_queue_t saveQueue = dispatch_queue_create("saveQueue", NULL);
+    dispatch_queue_t saveQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
     dispatch_async(saveQueue, ^ {
         NSError *error = nil;
         BOOL saved = [ProfileSaverFetcher saveServerProfile:blockSafeSelf.serverProfile
@@ -155,7 +155,6 @@
             [blockSafeSelf.navigationController popToRootViewControllerAnimated:YES];
         });
     });
-    dispatch_release(saveQueue);
 }
 
 #pragma mark - ServerProfile VC behaviour change Methods
@@ -331,7 +330,7 @@
     __weak ServerProfileViewController *blockSafeSelf = self;
     __block NSDictionary *probeResults;
     __block NSError *error = nil;
-    dispatch_queue_t probeQueue = dispatch_queue_create("probeQueue", NULL);
+    dispatch_queue_t probeQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
     dispatch_async(probeQueue, ^{
         if (!blockSafeSelf.successfulSecurityProbe)
             probeResults = [ServerProfile probeServerProfile:blockSafeSelf.serverProfile
@@ -412,7 +411,6 @@
             }
 		});
     });
-    dispatch_release(probeQueue);
 }
 
 #pragma mark - Server Profile model methods

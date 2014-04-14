@@ -41,9 +41,7 @@
 //@property (strong,nonatomic) NSTimer *loopedTimer; //continuous read loop
 @end
 
-@implementation RFBInputConnManager {
-    dispatch_queue_t _inputQueue;
-}
+@implementation RFBInputConnManager
 #pragma mark - init, dealloc overrides
 -(id)init {
 	return [self initWithProfile:nil ProtocolDelegate:nil];
@@ -66,25 +64,6 @@
     self.delegate = nil;
 	self.serverProfile = nil;
 	self.rfbconn = nil;
-}
-
-#pragma mark - GCD queue pointer store iOS 5.1 workaround
-//iOS 5.1 doesn't allow strong property for dispatch queues as they're not Objective-C objects
--(dispatch_queue_t)inputQueue {
-    if (_inputQueue == NULL) {
-        _inputQueue = dispatch_queue_create("iOSVNCInputClient.InputCheckQueue", DISPATCH_QUEUE_CONCURRENT);
-//        DLog(@"Input Queue Created");
-    }
-    
-    return _inputQueue;
-}
-
--(void)setInputQueue:(dispatch_queue_t)inputQueue {
-    if (_inputQueue != NULL) {
-        dispatch_release(_inputQueue);
-//        DLog(@"Input Queue Released");
-    }
-    _inputQueue = inputQueue;
 }
 
 #pragma mark - Error Management - Private
@@ -117,7 +96,7 @@
 	
 	//Connect
 	__weak RFBInputConnManager *blockSafeSelf = self;
-	dispatch_async([self inputQueue], ^{
+	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 		__block NSError *error = nil;
 		__block BOOL success = [blockSafeSelf.rfbconn connect:&error];
 		dispatch_async(dispatch_get_main_queue(), ^{ //Tell delegate connection complete, do rest of startup
@@ -152,9 +131,6 @@
 	//Disconnect
     [self.rfbconn disconnect];
 	self.rfbconn = nil;
-	
-	//Clear queues & Clear propertys holding the queues
-    [self setInputQueue:nil];
     
     /*
 	if (self.readQueue) {
@@ -172,7 +148,7 @@
 -(void)sendEvent:(RFBEvent *)event {
 	//Send event
 	__weak RFBInputConnManager *blockSafeSelf = self;
-    dispatch_async([self inputQueue], ^{
+	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         __block NSError *error = nil;
         [blockSafeSelf.rfbconn sendEvent:event
                                    Error:&error];
