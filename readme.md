@@ -62,7 +62,7 @@ RFB protocol object model is based on Valence, but modified, with underlying met
 ### Changelog
 ---
 
-* 2014-Apr-14 Bug fixes, updated Known Issues, minor code cleanup
+* 2014-Apr-14 Minor bug fixes, updated Known Issues, minor code cleanup
 * 2014-Jan-24	Initial Public Release
 
 ### Licensing
