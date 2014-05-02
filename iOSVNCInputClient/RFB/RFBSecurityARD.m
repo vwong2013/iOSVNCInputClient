@@ -315,7 +315,8 @@ typedef struct {
     dhResult->pubKeyLen = pubKeyLength;
     dhResult->privKeyLen = privKeyLength;
     dhResult->secKeyLen = secretLength;
-	 
+	
+    //TODO: malloc/free using OPENSSL_malloc/free for security?
 	//Cleanup
     free(pubKey);
     free(privKey);

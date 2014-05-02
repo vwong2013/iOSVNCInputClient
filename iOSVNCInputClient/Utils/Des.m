@@ -52,13 +52,14 @@
 	
 	//Encrypt/decrypt.  YES = DES_ENCRYPT, NO = DES_DECRYPT
 	unsigned char outputM[sizeof(DES_cblock)];
-	DES_ecb_encrypt((DES_cblock *)[msgBlock bytes], (DES_cblock *)outputM, &keysched, encrypt);
-	
+    DES_cblock *inputM = (DES_cblock *)[msgBlock bytes];
+	DES_ecb_encrypt(inputM, (DES_cblock *)outputM, &keysched, encrypt);
+    
 	//Cleanup
 	free(desKey);
-	
+    
 	return [NSData dataWithBytes:outputM
-						  length:msgBlock.length];
+						  length:sizeof(outputM)];
 }
 
 //Wrapper for spliting the msg into blocks for encryption/decryption
@@ -76,8 +77,10 @@
                                                   Key:key
                                               Encrypt:encrypt];
     
-	if (!cipherSubset)
-        cipherSubset = [NSData new];
+    //Return blank NSData if en/decrypt fails
+	if (!cipherSubset) {
+        cipherSubset = [NSData data];
+    }
     
 	return cipherSubset;
 }
@@ -108,17 +111,31 @@
 + (NSData *)encryptMessage:(NSData *)plaindata
 				   withKey:(NSData *)key {
 	//Return empty NSData object if message or key are blank / length == 0
-	if (!plaindata || plaindata.length == 0 || !key || key.length == 0)
-		return [NSData new];
+	if (!plaindata || plaindata.length == 0 || !key || key.length == 0) {
+		return [NSData data];
+    }
     
 	//Encrypt each 8 byte block of the message.
+    BOOL failedEncrypt = NO;
 	NSMutableData *ciphertext = [NSMutableData dataWithCapacity:plaindata.length]; //Extended automatically if padding req.
 	for (uint i = 0; i < plaindata.length; i += 8) {
-		[ciphertext appendData: [[self class] encryptBlockForMessage:plaindata
-                                                       MessageOffset:i
-                                                                 Key:key
-                                                             Encrypt:YES]];
+        NSData *encryptedBlock = [[self class] encryptBlockForMessage:plaindata
+                                                        MessageOffset:i
+                                                                  Key:key
+                                                              Encrypt:YES];
+        
+        if (encryptedBlock.length == 0 || encryptedBlock == nil) {
+            failedEncrypt = YES;
+            break;
+        }
+        
+		[ciphertext appendData:encryptedBlock];
 	}
+    
+    if (failedEncrypt) {
+        DLogErr(@"Failed to encrypt plain text!");
+        return [NSData data];
+    }
 	
 	return ciphertext;
 }
@@ -129,10 +146,12 @@
 + (NSData *)decryptMessage:(NSData *)cipherdata
 				   withKey:(NSData *)key {
 	//Return blank NSData object if message or key are blank / length == 0
-	if (!cipherdata || cipherdata.length == 0 || !key || key.length == 0)
-		return [NSData new];
+	if (!cipherdata || cipherdata.length == 0 || !key || key.length == 0) {
+		return [NSData data];
+    }
 	   
     //Note: couldn't use NSData's appendData as could not append c string null term after rebuilding string
+    BOOL failedDecryption = NO;
     unsigned char plaintextBytes[cipherdata.length+1]; //+1 size for null term
 	for (uint i = 0; i < cipherdata.length; i += 8) {
         NSData *decryptedBlock = [[self class] encryptBlockForMessage:cipherdata
@@ -140,12 +159,34 @@
                                                                   Key:key
                                                               Encrypt:NO];
         
+        //Break loop and fail if decryption fails
+        if (decryptedBlock.length == 0 || decryptedBlock == nil) {
+            failedDecryption = YES;
+            break;
+        }
+        
         //Copy decrypted bytes into buffer
         memccpy(plaintextBytes + i, [decryptedBlock bytes], (unsigned int)[decryptedBlock length], ((unsigned int)[decryptedBlock length] * sizeof(unsigned char)));
 	}
 	
+    //Return empty NSData object if decryption fails
+    if (failedDecryption) {
+        DLogErr(@"Failed to decrypt message block: %@", cipherdata);
+        return [NSData data];
+    }
+    
     //Append null term to end of c string
     plaintextBytes[cipherdata.length] = '\0';
+    
+    //!!!!: Temp, remove later
+    /*
+	NSString *debug = [NSString stringWithUTF8String:(char *)plaintextBytes];
+    if (!debug || debug.length == 0) {
+        DLog(@"debug decrypted string: %@", debug);
+        DLog(@"plaintextbytes: %s", (char *)plaintextBytes);
+        DLog(@"");
+    }
+    */
     
     //Wrap in NSData
     NSData *plaintext = [NSData dataWithBytes:plaintextBytes
@@ -172,8 +213,9 @@
  */
 + (NSData *)passwordToKey:(NSString *)password {
 	//Return blank NSdata if pwd length == 0
-	if (!password || password.length == 0)
-		return [NSData new];
+	if (!password || password.length == 0) {
+		return [NSData data];
+    }
 	
 	NSData *pwdData = [password dataUsingEncoding:NSUTF8StringEncoding];
 	const char *pwdBytes = [pwdData bytes];
@@ -226,24 +268,34 @@
 #pragma mark - Convenience Methods For Strings - Public
 //Key must be a DES_cblock key (length 8 bytes) wrapped in a NSData object
 + (NSString *)encryptText:(NSString *)plaintext WithKey:(NSData *)key {
-	if (!key)
+	if (!key) {
 		key = [[self class] FALLBACK_CRYPT_KEY];
-	if (key.length != sizeof(DES_cblock))
+    }
+	if (key.length != sizeof(DES_cblock)) {
         return @"";
+    }
     
     NSData *plainData = [NSData dataWithBytes:[plaintext cStringUsingEncoding:NSUTF8StringEncoding]
                                        length:[plaintext lengthOfBytesUsingEncoding:NSUTF8StringEncoding]];
 
-	return [NSData hexString:[[self class] encryptMessage:plainData
-                                                  withKey:key]];
+    NSData *encryptedMsg = [[self class] encryptMessage:plainData
+                                                withKey:key];
+    
+    if (encryptedMsg.length == 0) {
+        return @"";
+    }
+    
+	return [NSData hexString:encryptedMsg];
 }
 
 //Key must be a DES_cblock key (length 8 bytes) wrapped in a NSData object
 + (NSString *)decryptText:(NSString *)ciphertext WithKey:(NSData *)key {
-	if (!key)
+	if (!key) {
 		key = [[self class] FALLBACK_CRYPT_KEY];
-	if (key.length != sizeof(DES_cblock))
+    }
+	if (key.length != sizeof(DES_cblock)) {
         return @"";
+    }
 
 	NSData *plainData = [[self class] decryptMessage:[NSData dataFromHexString:ciphertext]
                                              withKey:key];
@@ -257,7 +309,7 @@
 	NSString *plaintext = [NSString stringWithUTF8String:plainBytes];
     if (!plaintext || plaintext.length == 0) {
         DLogErr(@"DecryptText error - failed to wrap c string as NSString");
-        DLog(@"plainBytes %s",plainBytes);        
+        DLog(@"plainBytes %s",plainBytes);
         return @""; //failed to wrap c string as NSString
     }
     
